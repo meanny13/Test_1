@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ชำระเงิน ✨</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500&family=N自由+Sarabun:wght@400;500;600&family=Pattaya&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blush:    #F6B4C4;
+    --rose:     #E58FA9;
+    --petal:    #FFF0F5;
+    --cream:    #FAF5F6;
+    --wine:     #73334A;
+    --soft-gray:#8A7A81;
+    --white:    #FFFFFF;
+    --paper-line: #F2D5DE;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--cream);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+    background-image: radial-gradient(circle at 10% 20%, #FDF0F4 0%, transparent 40%),
+                      radial-gradient(circle at 90% 80%, #F9E2E9 0%, transparent 40%);
+  }
+
+  /* ─── OVERLAY ─────────────────────────── */
+  #overlay {
+    position: fixed; inset: 0;
+    background: rgba(115, 51, 74, 0.35);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    animation: fadeIn .3s ease;
+  }
+  @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+
+  /* ─── ENVELOPE ────────────────────────── */
+  .envelope-wrap {
+    position: relative;
+    cursor: pointer;
+    width: 340px;
+    filter: drop-shadow(0 15px 35px rgba(115,51,74,0.18));
+    transition: transform .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .envelope-wrap:hover { transform: translateY(-8px) scale(1.02); }
+  .envelope-wrap:active { transform: scale(0.98); }
+
+  .env-body {
+    background: linear-gradient(160deg, #FFF5F8, #FCD9E3);
+    border-radius: 12px;
+    width: 340px;
+    height: 230px;
+    position: relative;
+    overflow: hidden;
+    border: 1.5px solid rgba(246, 180, 196, 0.6);
+  }
+
+  .env-flap {
+    position: absolute; top: 0; left: 0; width: 100%; height: 0;
+    border-left: 170px solid transparent;
+    border-right: 170px solid transparent;
+    border-top: 110px solid #F9CFDC;
+    z-index: 2;
+  }
+  .env-flap::after {
+    content: ''; position: absolute; top: -110px; left: -170px;
+    border-left: 170px solid transparent;
+    border-right: 170px solid transparent;
+    border-top: 110px solid #EAA3BA;
+    opacity: .25;
+  }
+
+  .env-bottom {
+    position: absolute; bottom: 0; left: 0; width: 100%;
+    border-left: 170px solid transparent;
+    border-right: 170px solid transparent;
+    border-bottom: 105px solid #F9CFDC;
+  }
+  .env-left {
+    position: absolute; bottom: 0; left: 0;
+    border-left: 170px solid #F4BDCE;
+    border-top: 120px solid transparent;
+  }
+  .env-right {
+    position: absolute; bottom: 0; right: 0;
+    border-right: 170px solid #F4BDCE;
+    border-top: 120px solid transparent;
+  }
+
+  .stamp {
+    position: absolute; top: 20px; right: 20px;
+    width: 55px; height: 68px;
+    background: var(--white);
+    border: 2.5px dashed var(--rose);
+    border-radius: 4px; z-index: 3;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  }
+  .stamp-heart { font-size: 20px; animation: heartbeat 1.5s infinite; }
+  @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+  .stamp-text  { font-size: 8px; color: var(--wine); font-weight: 600; letter-spacing: 1px; font-family: 'Mitr', sans-serif;}
+
+  .env-deco { position: absolute; z-index: 3; font-size: 16px; opacity: .7; }
+  .env-deco.d1 { bottom: 30px; left: 30px; }
+  .env-deco.d2 { bottom: 55px; left: 60px; font-size: 11px; opacity: .5; }
+
+  .env-cta {
+    position: absolute; z-index: 4;
+    bottom: 18px; width: 100%; text-align: center;
+    font-family: 'Mitr', sans-serif;
+    font-size: 14px; font-weight: 400;
+    color: var(--wine); letter-spacing: .5px;
+  }
+
+  .click-hint {
+    text-align: center; margin-top: 18px;
+    font-size: 13px; color: rgba(255,255,255,0.9);
+    letter-spacing: .8px; font-family: 'Mitr', sans-serif;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:.7; transform: translateY(0);} 50%{opacity:1; transform: translateY(-4px);} }
+
+  /* ─── MAIN PAGE (LETTER FORMAT) ──────────────── */
+  #main {
+    display: none;
+    width: min(460px, 92vw);
+    background: var(--white);
+    border-radius: 20px;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(115,51,74,0.1), 
+                0 0 0 8px var(--white), 
+                0 0 0 10px rgba(246, 180, 196, 0.4); /* ซ้อนขอบให้เหมือนจดหมายซ้อนในซอง */
+    margin: 20px 0;
+  }
+
+  /* รอยปรุสไตล์จดหมายน่ารักๆ */
+  #main::before {
+    content: ''; position: absolute; inset: 12px;
+    border: 2px dashed #F2D5DE; border-radius: 12px;
+    pointer-events: none;
+  }
+
+  .page-header {
+    padding: 40px 35px 15px;
+    text-align: center;
+  }
+  .page-header h1 {
+    font-family: 'Mitr', sans-serif;
+    font-weight: 500; font-size: 24px;
+    color: var(--wine);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .page-header p {
+    font-size: 13px; color: var(--soft-gray); margin-top: 6px; letter-spacing: .3px;
+  }
+
+  .page-body { padding: 10px 35px 40px; position: relative; z-index: 2; }
+
+  /* ── QR section ── */
+  .qr-section { text-align: center; margin-bottom: 25px; }
+  .qr-frame {
+    display: inline-block;
+    width: 170px; height: 170px;
+    border-radius: 20px;
+    border: 2px dashed var(--blush);
+    background: var(--cream);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px; margin: 0 auto 12px; cursor: pointer;
+    transition: all .2s ease; overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 4px 10px rgba(115,51,74,0.03);
+  }
+  .qr-frame:hover { border-color: var(--rose); background: var(--petal); transform: scale(1.02); }
+  .qr-frame img { width: 100%; height: 100%; object-fit: cover; border-radius: 18px; display: none; }
+  .qr-placeholder { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .qr-icon { font-size: 36px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05)); }
+  .qr-label { font-size: 12px; color: var(--soft-gray); font-family: 'Mitr', sans-serif; }
+  .qr-note { font-size: 12px; color: var(--soft-gray); line-height: 1.6; }
+  #qr-input { display: none; }
+
+  /* section title */
+  .section-title {
+    font-family: 'Mitr', sans-serif;
+    font-size: 14px; font-weight: 400;
+    color: var(--wine); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+    letter-spacing: .3px;
+  }
+  .section-title::before {
+    content: '🌸'; font-size: 12px;
+  }
+
+  /* ── payment boxes (Minimal - No Logo) ── */
+  .payment-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
+
+  .payment-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--petal);
+    border-radius: 14px; padding: 14px 18px;
+    border: 1px solid rgba(242, 196, 213, 0.5);
+    transition: transform 0.2s ease;
+  }
+  .payment-row:hover { transform: translateX(3px); }
+
+  .payment-info { display: flex; flex-direction: column; gap: 2px; }
+  .payment-info .bank-name {
+    font-size: 12px; font-weight: 500; color: var(--soft-gray);
+    font-family: 'Mitr', sans-serif; text-transform: uppercase; letter-spacing: .5px;
+  }
+  .payment-info .acc-number {
+    font-size: 17px; font-family: 'Mitr', sans-serif;
+    color: var(--wine); font-weight: 500; letter-spacing: 0.5px;
+  }
+
+  .copy-btn {
+    background: var(--white);
+    color: var(--rose);
+    border: 1.5px solid var(--rose); border-radius: 20px;
+    padding: 6px 16px; font-size: 12px;
+    font-family: 'Mitr', sans-serif; font-weight: 400;
+    cursor: pointer; transition: all .2s ease;
+    box-shadow: 0 2px 6px rgba(229,143,169,0.1);
+  }
+  .copy-btn:hover  { background: var(--rose); color: var(--white); }
+  .copy-btn:active { transform: scale(.95); }
+  .copy-btn.copied { background: #EAF9EE; color: #2E7D32; border-color: #A3E2AB; }
+
+  /* ── warning ── */
+  .warning-box {
+    background: #FFFBFD;
+    border: 1px dashed var(--blush);
+    border-radius: 14px; padding: 14px 18px;
+    margin-bottom: 25px;
+  }
+  .warning-box .warn-title {
+    font-family: 'Mitr', sans-serif;
+    font-size: 13px; color: var(--wine);
+    margin-bottom: 6px; display: flex; align-items: center; gap: 4px;
+  }
+  .warning-box ul { list-style: none; }
+  .warning-box ul li {
+    font-size: 12.5px; color: var(--soft-gray);
+    padding: 3px 0; display: flex; align-items: center; gap: 6px;
+  }
+  .warning-box ul li::before { content: '♡'; color: var(--rose); font-weight: bold; }
+
+  /* ── contact ── */
+  .contact-list { display: flex; flex-direction: row; justify-content: center; gap: 15px; margin-top: 5px;}
+  .contact-item {
+    display: flex; align-items: center; justify-content: center;
+    width: 42px; height: 42px; background: var(--cream);
+    border-radius: 50%; text-decoration: none;
+    border: 1px solid rgba(242, 196, 213, 0.4);
+    transition: all .2s ease;
+  }
+  .contact-item:hover { background: var(--petal); border-color: var(--rose); transform: translateY(-3px); }
+  .contact-icon { font-size: 18px; }
+
+  /* divider */
+  .divider {
+    height: 1px; background: linear-gradient(to right, transparent, #F2D5DE, transparent);
+    margin: 22px 0; border: none;
+  }
+
+  /* toast */
+  #toast {
+    position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--wine); color: var(--white);
+    padding: 10px 24px; border-radius: 30px;
+    font-size: 13px; font-family: 'Mitr', sans-serif;
+    opacity: 0; transition: all .3s cubic-bezier(0.175, 0.885, 0.32, 1.175);
+    pointer-events: none; z-index: 9999; box-shadow: 0 10px 25px rgba(115,51,74,0.2);
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ═══ OVERLAY / ENVELOPE ═══ -->
+<div id="overlay">
+  <div style="text-align:center">
+    <div class="envelope-wrap" onclick="openEnvelope()">
+      <div class="env-body">
+        <div class="env-flap"></div>
+
+        <!-- stamp -->
+        <div class="stamp">
+          <span class="stamp-heart">💌</span>
+          <span class="stamp-text">HELLO</span>
+        </div>
+
+        <div class="env-deco d1">✨</div>
+        <div class="env-deco d2">🍓</div>
+
+        <div class="env-left"></div>
+        <div class="env-right"></div>
+        <div class="env-bottom"></div>
+
+        <div class="env-cta">เปิดจดหมายเปิดใจ 🧸</div>
+      </div>
+    </div>
+    <p class="click-hint">✨ แตะซองจดหมายเพื่อดูข้อมูลการชำระเงิน ✨</p>
+  </div>
+</div>
+
+<!-- ═══ MAIN PAGE (LETTER DESIGN) ═══ -->
+<div id="main">
+  <div class="page-header">
+    <h1>Payment Details 🥖</h1>
+    <p>คุณลูกค้าสามารถเลือกช่องทางโอนเงินได้ทางนี้เลยนะคะ</p>
+  </div>
+
+  <div class="page-body">
+
+    <!-- QR / slip image -->
+    <div class="qr-section">
+      <label for="qr-input">
+        <div class="qr-frame" id="qrFrame">
+          <div class="qr-placeholder" id="qrPlaceholder">
+            <span class="qr-icon">📸</span>
+            <span class="qr-label">แตะเพื่อใส่รูปคิวอาร์</span>
+          </div>
+          <img id="qrImg" alt="QR Code" />
+        </div>
+      </label>
+      <input type="file" id="qr-input" accept="image/*" onchange="loadQR(event)">
+      <p class="qr-note">สแกนโค้ดด้านบน หรือจิ้มคัดลอกเลขด้านล่างได้เลยค่ะ ยินดีให้บริการนะคะ 🩰</p>
+    </div>
+
+    <hr class="divider">
+
+    <!-- payment channels (Minimal - Name & Number Only) -->
+    <p class="section-title">ช่องทางการชำระเงิน</p>
+    <div class="payment-list">
+
+      <div class="payment-row">
+        <div class="payment-info">
+          <div class="bank-name">ธนาคารกสิกรไทย (KBank)</div>
+          <div class="acc-number">012-3-45678-9</div>
+        </div>
+        <button class="copy-btn" onclick="copyText('0123456789', this)">คัดลอก</button>
+      </div>
+
+      <div class="payment-row">
+        <div class="payment-info">
+          <div class="bank-name">ทรูมันนี่ วอลเล็ท (พร้อมเพย์)</div>
+          <div class="acc-number">087-654-3219</div>
+        </div>
+        <button class="copy-btn" onclick="copyText('0876543219', this)">คัดลอก</button>
+      </div>
+
+    </div>
+
+    <!-- warning -->
+    <div class="warning-box">
+      <div class="warn-title">🧺 ข้อควรระวังเล็กๆ</div>
+      <ul>
+        <li>รบกวนตรวจสอบชื่อบัญชีก่อนกดยืนยันโอนเงินทุกครั้งนะคะ</li>
+        <li>เมื่อโอนเรียบร้อยแล้ว ส่งสลิปให้ทางร้านได้เลยค่ะ รีบจัดการให้เลย!</li>
+      </ul>
+    </div>
+
+    <hr class="divider">
+
+    <!-- contact Icons -->
+    <div class="contact-section">
+      <div class="contact-list">
+        <a class="contact-item" href="https://line.me/ti/p/~yourlineID" target="_blank" title="LINE">
+          <span class="contact-icon">💬</span>
+        </a>
+        <a class="contact-item" href="https://www.facebook.com/yourpage" target="_blank" title="Facebook">
+          <span class="contact-icon">🎀</span>
+        </a>
+        <a class="contact-item" href="tel:0876543219" title="โทรหาเรา">
+          <span class="contact-icon">📞</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- toast -->
+<div id="toast">คัดลอกเลขบัญชีแล้วค่ะ ปิ๊ง! ✨</div>
+
+<script>
+  function openEnvelope() {
+    const overlay = document.getElementById('overlay');
+    overlay.style.animation = 'none';
+    overlay.style.opacity = 1;
+    overlay.style.transition = 'opacity .4s ease-out';
+    requestAnimationFrame(() => { overlay.style.opacity = 0; });
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      const main = document.getElementById('main');
+      main.style.display = 'block';
+      main.style.animation = 'slideUp .6s cubic-bezier(.16,1,.3,1) both';
+    }, 400);
+  }
+
+  const ks = document.createElement('style');
+  ks.textContent = '@keyframes slideUp { from{opacity:0;transform:translateY(40px) scale(0.96)} to{opacity:1;transform:translateY(0) scale(1)} }';
+  document.head.appendChild(ks);
+
+  function loadQR(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = document.getElementById('qrImg');
+      img.src = ev.target.result;
+      img.style.display = 'block';
+      document.getElementById('qrPlaceholder').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ สำเร็จ';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'คัดลอก'; btn.classList.remove('copied'); }, 1800);
+      showToast();
+    });
+  }
+
+  function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+</script>
+</body>
+</html>
